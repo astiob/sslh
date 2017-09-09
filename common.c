@@ -312,15 +312,20 @@ int defer_write(struct queue *q, void* data, int data_size)
 {
     char *p;
     ptrdiff_t data_offset = q->deferred_data - q->begin_deferred_data;
+    int new_size = q->deferred_data_size + data_size;
     if (verbose)
         fprintf(stderr, "**** writing deferred on fd %d\n", q->fd);
 
-    p = realloc(q->begin_deferred_data, data_offset + q->deferred_data_size + data_size);
-    CHECK_ALLOC(p, "realloc");
+    if (data_offset + new_size > q->deferred_data_capacity) {
+        p = realloc(q->begin_deferred_data, data_offset + new_size);
+        CHECK_ALLOC(p, "realloc");
 
-    q->begin_deferred_data = p;
-    q->deferred_data = p + data_offset;
-    p += data_offset + q->deferred_data_size;
+        q->begin_deferred_data = p;
+        q->deferred_data = p + data_offset;
+        q->deferred_data_capacity = data_offset + new_size;
+    }
+
+    p = q->deferred_data + q->deferred_data_size;
     q->deferred_data_size += data_size;
     memcpy(p, data, data_size);
 
@@ -343,10 +348,8 @@ int flush_deferred(struct queue *q)
         return n;
 
     if (n == q->deferred_data_size) {
-        /* All has been written -- release the memory */
-        free(q->begin_deferred_data);
-        q->begin_deferred_data = NULL;
-        q->deferred_data = NULL;
+        /* All has been written -- reset the buffer */
+        q->deferred_data = q->begin_deferred_data;
         q->deferred_data_size = 0;
     } else {
         /* There is data left */

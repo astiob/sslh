@@ -146,7 +146,7 @@ int connect_queue(struct connection *cnx, fd_set *fds_r, fd_set *fds_w)
         log_connection(cnx);
         set_nonblock(q->fd);
         flush_deferred(q);
-        if (q->deferred_data) {
+        if (q->deferred_data_size) {
             FD_SET(q->fd, fds_w);
             FD_CLR(cnx->q[0].fd, fds_r);
         }

@@ -114,6 +114,7 @@ void start_shoveler(int in_socket)
    log_connection(&cnx);
 
    flush_deferred(&cnx.q[1]);
+   free(cnx.q[1].begin_deferred_data);
 
    shovel(&cnx);
 

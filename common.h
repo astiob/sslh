@@ -81,6 +81,7 @@ struct queue {
     int fd;
     void *begin_deferred_data;
     void *deferred_data;
+    size_t deferred_data_capacity;
     int deferred_data_size;
 };
 
