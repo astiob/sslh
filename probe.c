@@ -204,14 +204,10 @@ static int probe_http_method(const char *p, int len, const char *opt)
 static int is_http_protocol(const char *p, int len, struct proto *proto)
 {
     int res;
-    /* If it's got HTTP in the request (HTTP/1.1) then it's HTTP */
-    if (memmem(p, len, "HTTP", 4))
-        return PROBE_MATCH;
 
 #define PROBE_HTTP_METHOD(opt) if ((res = probe_http_method(p, len, opt)) != PROBE_NEXT) return res
 
-    /* Otherwise it could be HTTP/1.0 without version: check if it's got an
-     * HTTP method (RFC2616 5.1.1) */
+    /* Check if it's got an HTTP method (RFC2616 5.1.1) */
     PROBE_HTTP_METHOD("OPTIONS");
     PROBE_HTTP_METHOD("GET");
     PROBE_HTTP_METHOD("HEAD");
